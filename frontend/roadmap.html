@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCI Coin - Development Roadmap</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+        }
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .page-header h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        .page-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .roadmap-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .phase-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 6px solid #667eea;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .phase-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+        .phase-card.completed {
+            border-left-color: #28a745;
+        }
+        .phase-card.completed .phase-status {
+            background: #28a745;
+        }
+        .phase-card.in-progress {
+            border-left-color: #ffc107;
+        }
+        .phase-card.in-progress .phase-status {
+            background: #ffc107;
+        }
+        .phase-card.pending {
+            border-left-color: #6c757d;
+        }
+        .phase-card.pending .phase-status {
+            background: #6c757d;
+        }
+        .phase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .phase-number {
+            font-size: 3rem;
+            color: #667eea;
+            font-weight: bold;
+            opacity: 0.2;
+        }
+        .phase-title {
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .phase-status {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .phase-items {
+            list-style: none;
+            padding: 0;
+        }
+        .phase-items li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            color: #555;
+        }
+        .phase-items li:last-child {
+            border-bottom: none;
+        }
+        .phase-items li:before {
+            content: "✓";
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            line-height: 24px;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-size: 0.8rem;
+        }
+        .phase-items.pending li:before {
+            content: "○";
+            background: #e0e0e0;
+            color: #999;
+        }
+        .phase-items.in-progress li:before {
+            content: "◑";
+            background: #ffc107;
+        }
+        .nav-buttons {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .nav-buttons a {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 25px;
+            margin: 0 10px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 8px;
+            display: inline-block;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+        }
+        .nav-buttons a:hover {
+            background: #fff;
+            color: #667eea;
+        }
+        .nav-buttons a.active {
+            background: #fff;
+            color: #667eea;
+        }
+        body.dark-theme {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        body.dark-theme .page-header,
+        body.dark-theme .phase-card {
+            background: rgba(30, 30, 46, 0.95);
+            color: #e0e0e0;
+        }
+        body.dark-theme .phase-title {
+            color: #667eea;
+        }
+        body.dark-theme .phase-items li {
+            color: #ccc;
+            border-bottom-color: #444;
+        }
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .theme-slider {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.4s;
+        }
+        .theme-slider:before {
+            content: "🌙";
+            position: absolute;
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.4s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        input:checked + .theme-slider {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+        }
+        input:checked + .theme-slider:before {
+            transform: translateX(30px);
+            content: "☀️";
+        }
+    </style>
+</head>
+<body>
+    <label class="theme-switch" title="Toggle Dark/Light Mode">
+        <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+        <span class="theme-slider"></span>
+    </label>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🗺️ CCI Coin Development Roadmap</h1>
+            <p>Our journey to build a comprehensive blockchain ecosystem</p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/">⛓️ Blockchain</a>
+            <a href="/cci.html">🪙 CCI Token</a>
+            <a href="/merchant.html">💼 Merchant</a>
+            <a href="/roadmap.html" class="active">🗺️ Roadmap</a>
+            <a href="/governance.html">🏛️ Governance</a>
+            <a href="/security.html">🔒 Security</a>
+            <a href="/future.html">🚀 Future</a>
+            <a href="/risk-analyzer.html">🛡️ Risk Analyzer</a>
+        </div>
+
+        <div class="roadmap-container">
+            <div class="phase-card completed">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">01</div>
+                        <h2 class="phase-title">Phase 1 – Research & Planning</h2>
+                    </div>
+                    <span class="phase-status">✓ Completed</span>
+                </div>
+                <ul class="phase-items completed">
+                    <li>Market research and competitive analysis</li>
+                    <li>Technical planning and architecture design</li>
+                    <li>Blockchain network selection (Ethereum/Polygon/BNB Chain)</li>
+                    <li>Tokenomics structure finalization</li>
+                    <li>Legal and compliance framework setup</li>
+                </ul>
+            </div>
+
+            <div class="phase-card completed">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">02</div>
+                        <h2 class="phase-title">Phase 2 – Smart Contract Development</h2>
+                    </div>
+                    <span class="phase-status">✓ Completed</span>
+                </div>
+                <ul class="phase-items completed">
+                    <li>ERC-20 token creation and deployment</li>
+                    <li>Smart contract coding (transfer, mint, burn, pause)</li>
+                    <li>Internal testing and debugging</li>
+                    <li>Token supply management implementation</li>
+                    <li>Staking smart contract development</li>
+                </ul>
+            </div>
+
+            <div class="phase-card in-progress">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">03</div>
+                        <h2 class="phase-title">Phase 3 – Platform Development</h2>
+                    </div>
+                    <span class="phase-status">⏳ In Progress</span>
+                </div>
+                <ul class="phase-items in-progress">
+                    <li>Web dashboard development (Completed)</li>
+                    <li>MetaMask wallet integration (Completed)</li>
+                    <li>Merchant payment APIs (In Development)</li>
+                    <li>Mobile wallet applications (Android & iOS)</li>
+                    <li>QR code payment system</li>
+                    <li>Transaction history tracking</li>
+                    <li>Multi-device synchronization</li>
+                </ul>
+            </div>
+
+            <div class="phase-card pending">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">04</div>
+                        <h2 class="phase-title">Phase 4 – Security Audits</h2>
+                    </div>
+                    <span class="phase-status">○ Pending</span>
+                </div>
+                <ul class="phase-items pending">
+                    <li>Third-party smart contract audit</li>
+                    <li>Penetration testing and vulnerability assessment</li>
+                    <li>Security compliance certification</li>
+                    <li>Bug bounty program launch</li>
+                    <li>Fraud detection system implementation</li>
+                </ul>
+            </div>
+
+            <div class="phase-card pending">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">05</div>
+                        <h2 class="phase-title">Phase 5 – Public Launch</h2>
+                    </div>
+                    <span class="phase-status">○ Pending</span>
+                </div>
+                <ul class="phase-items pending">
+                    <li>Marketing campaigns and PR outreach</li>
+                    <li>Community onboarding programs</li>
+                    <li>Exchange listing preparation (CEX & DEX)</li>
+                    <li>Token sale and distribution</li>
+                    <li>Partnership announcements</li>
+                    <li>DAO governance activation</li>
+                </ul>
+            </div>
+
+            <div class="phase-card pending">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">06</div>
+                        <h2 class="phase-title">Future Expansion</h2>
+                    </div>
+                    <span class="phase-status">🚀 Planned</span>
+                </div>
+                <ul class="phase-items pending">
+                    <li>NFT marketplace development</li>
+                    <li>Gaming integrations and play-to-earn</li>
+                    <li>Metaverse compatibility</li>
+                    <li>DeFi ecosystem services (lending, liquidity pools)</li>
+                    <li>International remittance systems</li>
+                    <li>Enterprise blockchain solutions</li>
+                    <li>Web3 creator economy platforms</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            document.getElementById('themeToggle').checked = isDark;
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('themeToggle').checked = true;
+            }
+        });
+    </script>
+</body>
+</html>
