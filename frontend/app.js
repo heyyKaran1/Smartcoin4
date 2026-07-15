@@ -291,6 +291,21 @@ function updateWalletSelects() {
     minerWallet.innerHTML = '<option value="">Select wallet...</option>' + options;
 }
 
+async function connectMetaMaskForBalance() {
+    if (typeof Web3Manager !== 'undefined') {
+        try {
+            const account = await Web3Manager.connect();
+            document.getElementById('addressInput').value = account;
+            showNotification('MetaMask connected! Address filled automatically.', 'success');
+            await checkBalance();
+        } catch (error) {
+            showNotification('Failed to connect MetaMask: ' + error.message, 'error');
+        }
+    } else {
+        showNotification('MetaMask not available. Please install MetaMask extension.', 'error');
+    }
+}
+
 async function checkBalance() {
     const address = document.getElementById('addressInput').value.trim();
 
