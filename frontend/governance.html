@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCI Coin - Governance & DAO</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 25px; padding: 40px; margin-bottom: 30px; text-align: center;">
+            <h1 style="color: #667eea; font-size: 2.5rem; margin-bottom: 15px;">🏛️ Governance & DAO</h1>
+            <p style="color: #666; font-size: 1.1rem;">Decentralized decision-making for CCI Coin ecosystem</p>
+        </div>
+
+        <div class="nav-buttons" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+            <a href="/" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">⛓️ Blockchain</a>
+            <a href="/cci.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🪙 CCI Token</a>
+            <a href="/merchant.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">💼 Merchant</a>
+            <a href="/governance.html" style="background: #fff; padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #667eea; border-radius: 8px; display: inline-block;">🏛️ Governance</a>
+            <a href="/security.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🔒 Security</a>
+            <a href="/future.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🚀 Future</a>
+            <a href="/risk-analyzer.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🛡️ Risk Analyzer</a>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <section class="card">
+                    <h2>📊 DAO Overview</h2>
+                    <p>CCI Coin implements decentralized governance through a DAO (Decentralized Autonomous Organization), enabling token holders to participate in ecosystem decisions.</p>
+                    <div class="stats-grid" style="margin-top: 20px;">
+                        <div class="stat-item">
+                            <strong>Governance Model</strong>
+                            <span>Token-Based Voting</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Voting Power</strong>
+                            <span>1 CCI = 1 Vote</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Proposal Threshold</strong>
+                            <span>10,000 CCI</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Quorum Required</strong>
+                            <span>5% of Supply</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>✍️ Submit Proposal</h2>
+                    <p>CCI holders with 10,000+ tokens can submit governance proposals</p>
+                    <input type="text" id="proposalTitle" class="input-field" placeholder="Proposal Title">
+                    <textarea id="proposalDesc" class="input-field" placeholder="Proposal Description" rows="4"></textarea>
+                    <input type="text" id="proposerAddress" class="input-field" placeholder="Your CCI Address">
+                    <button class="btn btn-primary">Submit Proposal</button>
+                </section>
+
+                <section class="card">
+                    <h2>🗳️ Vote on Proposals</h2>
+                    <div class="proposal-item" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                        <h3>Proposal #1: Increase Staking Rewards</h3>
+                        <p>Increase staking APY from 10% to 15%</p>
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-success" style="margin-right: 10px;">Vote For</button>
+                            <button class="btn btn-danger">Vote Against</button>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                            Votes: 45% For | 35% Against | Ends in 5 days
+                        </div>
+                    </div>
+                    <div class="proposal-item" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                        <h3>Proposal #2: New Exchange Listing</h3>
+                        <p>Allocate funds for Binance listing</p>
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-success" style="margin-right: 10px;">Vote For</button>
+                            <button class="btn btn-danger">Vote Against</button>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                            Votes: 72% For | 18% Against | Ends in 12 days
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <section class="card">
+                    <h2>💰 Treasury Management</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <strong>Treasury Balance</strong>
+                            <span>150,000,000 CCI</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Reserved for Ecosystem</strong>
+                            <span>20%</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Active Proposals</strong>
+                            <span>5</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Total Voters</strong>
+                            <span>12,450</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>🎯 Governance Features</h2>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                            <span style="width: 30px; height: 30px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✓</span>
+                            Community voting on ecosystem changes
+                        </li>
+                        <li style="padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                            <span style="width: 30px; height: 30px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✓</span>
+                            Treasury fund allocation decisions
+                        </li>
+                        <li style="padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                            <span style="width: 30px; height: 30px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✓</span>
+                            Protocol upgrade proposals
+                        </li>
+                        <li style="padding: 12px 0; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                            <span style="width: 30px; height: 30px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✓</span>
+                            Partnership and collaboration approvals
+                        </li>
+                        <li style="padding: 12px 0; display: flex; align-items: center;">
+                            <span style="width: 30px; height: 30px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✓</span>
+                            Strategic initiative planning
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="card">
+                    <h2>📜 Governance Process</h2>
+                    <div style="padding: 15px 0;">
+                        <div style="margin-bottom: 20px;">
+                            <strong style="color: #667eea;">Step 1: Proposal Submission</strong>
+                            <p style="margin: 5px 0; color: #666;">Token holders with 10,000+ CCI submit proposals</p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <strong style="color: #667eea;">Step 2: Community Discussion</strong>
+                            <p style="margin: 5px 0; color: #666;">3-day discussion period on official channels</p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <strong style="color: #667eea;">Step 3: Voting Period</strong>
+                            <p style="margin: 5px 0; color: #666;">7-day voting period for all token holders</p>
+                        </div>
+                        <div>
+                            <strong style="color: #667eea;">Step 4: Implementation</strong>
+                            <p style="margin: 5px 0; color: #666;">Approved proposals executed by smart contracts</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

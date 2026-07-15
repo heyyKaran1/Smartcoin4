@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCI Coin - QR Scanner</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="html5-qrcode.min.js"></script>
+    <script src="web3-integration.js"></script>
+    <style>
+        #reader {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .payment-details {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .payment-details h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .detail-row {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .detail-value {
+            color: #333;
+            text-align: right;
+            word-break: break-all;
+        }
+        .payment-form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        .scan-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .scan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        .stop-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 25px; padding: 40px; margin-bottom: 30px; text-align: center;">
+            <h1 style="color: #667eea; font-size: 2.5rem;">📱 QR Scanner</h1>
+            <p style="color: #666; font-size: 1.1rem;">Scan CCI Payment QR Codes</p>
+        </div>
+
+        <div class="nav-buttons" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+            <a href="/" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">⛓️ Blockchain</a>
+            <a href="/cci.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🪙 CCI Token</a>
+            <a href="/merchant.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">💼 Merchant</a>
+            <a href="/scanner.html" style="background: #fff; padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #667eea; border-radius: 8px; display: inline-block;">📱 Scanner</a>
+            <a href="/governance.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🏛️ Governance</a>
+            <a href="/security.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🔒 Security</a>
+            <a href="/future.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🚀 Future</a>
+            <a href="/risk-analyzer.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🛡️ Risk Analyzer</a>
+        </div>
+
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button id="startBtn" class="scan-btn" onclick="startScanner()">📷 Start Camera</button>
+                <button id="stopBtn" class="scan-btn stop-btn" onclick="stopScanner()" style="display: none;">⏹️ Stop Camera</button>
+            </div>
+
+            <div id="reader"></div>
+
+            <div id="paymentDetails" style="display: none;" class="payment-details">
+                <h3>💳 Payment Details</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Merchant:</span>
+                    <span class="detail-value" id="merchantName">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Amount:</span>
+                    <span class="detail-value" id="amount">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">To Address:</span>
+                    <span class="detail-value" id="toAddress">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Reference:</span>
+                    <span class="detail-value" id="reference">-</span>
+                </div>
+            </div>
+
+            <div id="paymentForm" style="display: none;" class="payment-form">
+                <h3 style="color: #667eea; margin-bottom: 20px;">Complete Payment</h3>
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">Select Your Wallet:</label>
+                <select id="fromWallet" class="input-field" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #ddd; margin-bottom: 20px;">
+                    <option value="">Select wallet...</option>
+                </select>
+                <button class="btn btn-primary" onclick="processPayment()" style="width: 100%; padding: 15px; font-size: 1.1rem;">💸 Pay Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let html5QrCode;
+        let scannedPaymentData = null;
+
+        async function loadWallets() {
+            try {
+                const response = await fetch(`${API_URL}/wallets`);
+                const wallets = await response.json();
+
+                const select = document.getElementById('fromWallet');
+                select.innerHTML = '<option value="">Select wallet...</option>';
+
+                wallets.forEach((wallet, index) => {
+                    const option = document.createElement('option');
+                    option.value = wallet.address;
+                    option.textContent = `Wallet #${index} - ${wallet.address.substring(0, 20)}... (${wallet.balance} CCI)`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load wallets:', error);
+            }
+        }
+
+        function startScanner() {
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
+
+            html5QrCode = new Html5Qrcode("reader");
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                alert("Unable to start camera: " + err);
+                document.getElementById('startBtn').style.display = 'block';
+                document.getElementById('stopBtn').style.display = 'none';
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('startBtn').style.display = 'block';
+                    document.getElementById('stopBtn').style.display = 'none';
+                }).catch(err => {
+                    console.error("Failed to stop scanner:", err);
+                });
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            try {
+                const paymentData = JSON.parse(decodedText);
+
+                if (paymentData.type === 'cci_payment') {
+                    scannedPaymentData = paymentData;
+
+                    document.getElementById('merchantName').textContent = paymentData.merchant || 'N/A';
+                    document.getElementById('amount').textContent = paymentData.amount + ' CCI';
+                    document.getElementById('toAddress').textContent = paymentData.to;
+                    document.getElementById('reference').textContent = paymentData.reference || 'N/A';
+
+                    document.getElementById('paymentDetails').style.display = 'block';
+                    document.getElementById('paymentForm').style.display = 'block';
+
+                    loadWallets();
+
+                    stopScanner();
+
+                    alert('✅ QR Code Scanned Successfully!');
+                } else {
+                    alert('❌ Invalid CCI payment QR code');
+                }
+            } catch (error) {
+                alert('❌ Invalid QR code format: ' + error.message);
+            }
+        }
+
+        function onScanFailure(error) {
+        }
+
+        async function processPayment() {
+            const fromWallet = document.getElementById('fromWallet').value;
+
+            if (!fromWallet) {
+                alert('Please select a wallet');
+                return;
+            }
+
+            if (!scannedPaymentData) {
+                alert('No payment data scanned');
+                return;
+            }
+
+            if (confirm('💳 Choose Payment Method:\n\n✅ OK = Use MetaMask (Web3)\n❌ Cancel = Use Internal Wallet')) {
+                await processWithMetaMask();
+            } else {
+                await processWithInternalWallet(fromWallet);
+            }
+        }
+
+        async function processWithMetaMask() {
+            if (typeof Web3Manager === 'undefined' || !Web3Manager.isConnected()) {
+                alert('Please connect MetaMask first');
+                try {
+                    await Web3Manager.connect();
+                } catch (error) {
+                    alert('MetaMask connection failed: ' + error.message);
+                    return;
+                }
+            }
+
+            try {
+                const txHash = await Web3Manager.signTransaction({
+                    to: scannedPaymentData.to,
+                    amount: scannedPaymentData.amount,
+                    data: JSON.stringify({
+                        merchant: scannedPaymentData.merchant,
+                        reference: scannedPaymentData.reference,
+                        timestamp: Date.now()
+                    })
+                });
+
+                alert('✅ Payment Successful with MetaMask!\n\nTransaction Hash: ' + txHash + '\n\nPayment is being processed on the blockchain.');
+
+                document.getElementById('paymentDetails').style.display = 'none';
+                document.getElementById('paymentForm').style.display = 'none';
+                scannedPaymentData = null;
+
+            } catch (error) {
+                alert('❌ MetaMask Payment Failed: ' + error.message);
+            }
+        }
+
+        async function processWithInternalWallet(fromWallet) {
+            try {
+                const response = await fetch(`${API_URL}/transaction/merchant`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        from_address: fromWallet,
+                        to_address: scannedPaymentData.to,
+                        amount: scannedPaymentData.amount,
+                        fee: 0.5,
+                        merchant_name: scannedPaymentData.merchant,
+                        merchant_id: 'QR-' + Date.now(),
+                        purpose: 'QR Code Payment',
+                        reference_id: scannedPaymentData.reference
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('✅ Payment Successful!\n\nTransaction ID: ' + result.tx_id + '\n\nThe transaction is now in mempool. Mine a block to confirm it.');
+
+                    document.getElementById('paymentDetails').style.display = 'none';
+                    document.getElementById('paymentForm').style.display = 'none';
+                    scannedPaymentData = null;
+                } else {
+                    alert('❌ Payment Failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('❌ Payment Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

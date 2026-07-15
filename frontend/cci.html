@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCI Coin (CCI) Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="web3-integration.js"></script>
+    <script src="websocket-client.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+        }
+        .token-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 50px;
+            border-radius: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .token-logo {
+            font-size: 5rem;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .price-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .metamask-btn {
+            background: linear-gradient(135deg, #f6a000 0%, #ff6f00 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .connected {
+            background: #28a745;
+        }
+        .tokenomics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .tokenomics-item {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .tokenomics-item .percent {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .contract-address {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 15px 0;
+        }
+        .token-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .activity-item {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+            animation: slideIn 0.3s ease;
+        }
+        .activity-item.mint {
+            border-left-color: #28a745;
+        }
+        .activity-item.burn {
+            border-left-color: #dc3545;
+        }
+        .activity-item.transfer {
+            border-left-color: #667eea;
+        }
+        .transaction-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .transaction-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        .transaction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .tx-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .tx-type.mint {
+            background: #28a745;
+            color: white;
+        }
+        .tx-type.burn {
+            background: #dc3545;
+            color: white;
+        }
+        .tx-type.transfer {
+            background: #667eea;
+            color: white;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .card {
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .stat-item {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+        .stat-item strong {
+            display: block;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .stat-item span {
+            display: block;
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .card h2 {
+            display: flex;
+            align-items: center;
+        }
+        .input-field:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        body.dark-theme {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        body.dark-theme .token-header,
+        body.dark-theme .card {
+            background: rgba(30, 30, 46, 0.95);
+            color: #e0e0e0;
+        }
+        body.dark-theme .card h2,
+        body.dark-theme .token-header h1 {
+            color: #667eea;
+        }
+        body.dark-theme .token-header p,
+        body.dark-theme .price-display {
+            color: #e0e0e0;
+        }
+        body.dark-theme .stat-item,
+        body.dark-theme .activity-item,
+        body.dark-theme .transaction-item {
+            background: linear-gradient(135deg, #2a2a3e 0%, #1e1e2f 100%);
+            color: #e0e0e0;
+        }
+        body.dark-theme .stat-item strong {
+            color: #aaa !important;
+        }
+        body.dark-theme .stat-item span {
+            color: #e0e0e0 !important;
+        }
+        body.dark-theme .input-field {
+            background: #2a2a3e;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        body.dark-theme .contract-address {
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+        body.dark-theme .contract-address strong {
+            color: #667eea;
+        }
+        body.dark-theme .contract-address span {
+            color: #aaa;
+        }
+        body.dark-theme label,
+        body.dark-theme p,
+        body.dark-theme div {
+            color: inherit;
+        }
+        body.dark-theme .wallet-balance {
+            color: #28a745;
+        }
+        body.dark-theme .success-message {
+            background: linear-gradient(135deg, #28a74530 0%, #28a74520 100%);
+            color: #4ade80;
+        }
+        body.dark-theme .error-message {
+            background: linear-gradient(135deg, #dc354530 0%, #dc354520 100%);
+            color: #f87171;
+        }
+        body.dark-theme .tx-type {
+            opacity: 0.9;
+        }
+        body.dark-theme .empty-state {
+            color: #888;
+        }
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: 0.4s;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .theme-slider:before {
+            position: absolute;
+            content: "🌙";
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        input:checked + .theme-slider {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+        }
+        input:checked + .theme-slider:before {
+            transform: translateX(30px);
+            content: "☀️";
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="token-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                <div>
+                    <a href="/" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">⛓️ Blockchain</a>
+                    <a href="/cci.html" style="background: #fff; padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #667eea; border-radius: 8px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">🪙 CCI Token</a>
+                    <a href="/merchant.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">💼 Merchant</a>
+                    <a href="/scanner.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">📱 Scanner</a>
+                    <a href="/governance.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🏛️ Governance</a>
+                    <a href="/security.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🔒 Security</a>
+                    <a href="/future.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🚀 Future</a>
+                    <a href="/risk-analyzer.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🛡️ Risk Analyzer</a>
+                </div>
+                <label class="theme-switch" title="Toggle Dark/Light Mode">
+                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                    <span class="theme-slider"></span>
+                </label>
+            </div>
+            <div class="token-logo">🪙</div>
+            <h1>CCI Coin (CCI)</h1>
+            <p>Advanced ERC-20 Token on Ethereum Mainnet</p>
+            <div class="price-display" id="tokenPrice">₹10.00</div>
+            <p id="priceUSD">$0.12 USD</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <section class="card">
+                    <h2>🦊 MetaMask Wallet</h2>
+                    <button class="metamask-btn" id="connectBtn" onclick="connectMetaMask()">
+                        Connect MetaMask
+                    </button>
+                    <div id="walletInfo" style="display: none;">
+                        <h3>Wallet Connected</h3>
+                        <div class="contract-address">
+                            <strong>Address:</strong><br>
+                            <span id="connectedAddress"></span>
+                        </div>
+                        <div>
+                            <strong>CCI Balance:</strong>
+                            <div class="wallet-balance" id="smcBalance">0 CCI</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>💰 Get CCI Coins</h2>
+                    <p>Mint CCI tokens to any address</p>
+                    <input type="text" id="mintAddress" class="input-field" placeholder="Address">
+                    <input type="number" id="mintAmount" class="input-field" placeholder="Amount" value="1000">
+                    <button class="btn btn-primary" onclick="mintTokens()">Mint CCI Tokens</button>
+                    <div id="mintResult"></div>
+                </section>
+
+                <section class="card">
+                    <h2>🔥 Burn CCI Coins</h2>
+                    <p>Permanently remove CCI tokens from circulation</p>
+                    <input type="text" id="burnAddress" class="input-field" placeholder="Address">
+                    <input type="number" id="burnAmount" class="input-field" placeholder="Amount" value="100">
+                    <button class="btn btn-danger" onclick="burnTokens()">Burn CCI Tokens</button>
+                    <div id="burnResult"></div>
+                </section>
+
+                <section class="card">
+                    <h2>📤 Transfer CCI</h2>
+                    <input type="text" id="transferFrom" class="input-field" placeholder="From Address">
+                    <input type="text" id="transferTo" class="input-field" placeholder="To Address">
+                    <input type="number" id="transferAmount" class="input-field" placeholder="Amount">
+                    <button class="btn btn-primary" onclick="transferTokens()">Transfer CCI</button>
+                    <div id="transferResult"></div>
+                </section>
+
+                <section class="card">
+                    <h2>🔒 Staking (10% APY)</h2>
+                    <p>Lock CCI tokens and earn rewards</p>
+                    <input type="text" id="stakeAddress" class="input-field" placeholder="Your Address">
+                    <input type="number" id="stakeAmount" class="input-field" placeholder="Amount to Stake" value="1000">
+                    <button class="btn btn-success" onclick="stakeTokens()">Stake CCI</button>
+                    <button class="btn btn-secondary" onclick="unstakeTokens()">Unstake CCI</button>
+                    <button class="btn btn-primary" onclick="claimRewards()">Claim Rewards</button>
+                    <div id="stakingResult"></div>
+                    <div id="stakingInfo"></div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <section class="card">
+                    <h2>📜 Smart Contract</h2>
+                    <div class="contract-address">
+                        <strong>Network:</strong> <span id="networkName">Polygon Amoy</span><br>
+                        <strong>Contract Address:</strong><br>
+                        <span id="contractAddress"></span>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>📊 Price & Volume</h2>
+                    <canvas id="priceChart" style="max-height: 300px;"></canvas>
+                </section>
+
+                <section class="card">
+                    <h2>🎯 Tokenomics Distribution</h2>
+                    <canvas id="tokenomicsChart" style="max-height: 350px;"></canvas>
+                </section>
+
+                <section class="card">
+                    <h2>💎 Market Data <span class="live-indicator"></span></h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <strong>Total Supply</strong>
+                            <span id="totalSupply">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Circulating</strong>
+                            <span id="circulatingSupply">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Market Cap (₹)</strong>
+                            <span id="marketCapINR">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Market Cap ($)</strong>
+                            <span id="marketCapUSD">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Holders</strong>
+                            <span id="holders">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Decimals</strong>
+                            <span id="decimals">18</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Blockchain Height</strong>
+                            <span id="blockchainHeight">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Transactions</strong>
+                            <span id="transactionCount">0</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>⚡ Live Activity <span class="live-indicator"></span></h2>
+                    <div id="liveActivity" class="activity-feed">
+                        <p class="empty-state">No recent activity</p>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>📜 Transaction History</h2>
+                    <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                        <input type="text" id="historyAddress" class="input-field" placeholder="Filter by address (optional)" style="flex: 1;">
+                        <button class="btn btn-secondary" onclick="loadTransactionHistory()">Load</button>
+                        <button class="btn btn-success" onclick="exportToCSV()">📥 Export CSV</button>
+                    </div>
+                    <div id="transactionHistory" class="transaction-list">
+                        <p class="empty-state">No transactions yet</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let connectedAccount = null;
+
+        async function connectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    connectedAccount = accounts[0];
+                    localStorage.setItem('metamask_connected_account', connectedAccount);
+
+                    document.getElementById('walletInfo').style.display = 'block';
+                    document.getElementById('connectedAddress').textContent = connectedAccount;
+                    document.getElementById('connectBtn').textContent = 'Connected ✓';
+                    document.getElementById('connectBtn').classList.add('connected');
+
+                    await loadSMCBalance(connectedAccount);
+                    showNotification('MetaMask connected successfully!', 'success');
+                } catch (error) {
+                    showNotification('Failed to connect MetaMask: ' + error.message, 'error');
+                }
+            } else {
+                showNotification('MetaMask not detected! Please install MetaMask browser extension.', 'error');
+                setTimeout(() => {
+                    if (confirm('MetaMask is required. Would you like to install it now?')) {
+                        window.open('https://metamask.io/download/', '_blank');
+                    }
+                }, 500);
+            }
+        }
+
+        async function loadSMCBalance(address) {
+            try {
+                const response = await fetch(`${API_URL}/cci/balance/${address}`);
+                const data = await response.json();
+                document.getElementById('smcBalance').textContent = `${data.balance} CCI (₹${data.value_inr})`;
+            } catch (error) {
+                console.error('Failed to load balance:', error);
+            }
+        }
+
+        async function loadCCIInfo() {
+            try {
+                const response = await fetch(`${API_URL}/cci/info`);
+                const data = await response.json();
+
+                document.getElementById('tokenPrice').textContent = `₹${data.price_inr}`;
+                document.getElementById('priceUSD').textContent = `$${data.price_usd} USD`;
+                document.getElementById('totalSupply').textContent = data.total_supply.toLocaleString() + ' SMC';
+                document.getElementById('circulatingSupply').textContent = data.circulating_supply.toLocaleString() + ' SMC';
+                document.getElementById('marketCapINR').textContent = '₹' + data.market_cap_inr.toLocaleString();
+                document.getElementById('marketCapUSD').textContent = '$' + data.market_cap_usd.toLocaleString();
+                document.getElementById('holders').textContent = data.holders;
+                document.getElementById('decimals').textContent = data.decimals;
+                document.getElementById('blockchainHeight').textContent = data.blockchain_height;
+                document.getElementById('transactionCount').textContent = data.transaction_count;
+                document.getElementById('contractAddress').textContent = data.contract_address;
+                document.getElementById('networkName').textContent = data.network;
+
+                createTokenomicsChart(data.tokenomics);
+                createPriceChart(data);
+
+            } catch (error) {
+                console.error('Failed to load CCI Coin info:', error);
+            }
+        }
+
+        let tokenomicsChart = null;
+        let priceChart = null;
+
+        function createTokenomicsChart(tokenomics) {
+            const ctx = document.getElementById('tokenomicsChart');
+            if (tokenomicsChart) tokenomicsChart.destroy();
+
+            tokenomicsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(tokenomics),
+                    datasets: [{
+                        data: Object.values(tokenomics),
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5576c',
+                            '#4facfe',
+                            '#00f2fe'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                font: { size: 14 },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPriceChart(data) {
+            const ctx = document.getElementById('priceChart');
+            if (priceChart) priceChart.destroy();
+
+            const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Current'];
+            const prices = [8, 8.5, 9.2, 9.8, data.price_inr];
+
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Price (₹)',
+                        data: prices,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function stakeTokens() {
+            const address = document.getElementById('stakeAddress').value.trim() || connectedAccount;
+            const amount = parseFloat(document.getElementById('stakeAmount').value);
+            const resultDiv = document.getElementById('stakingResult');
+
+            if (!address || !amount) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Please enter address and amount';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/staking/stake`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({address: address, amount: amount})
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'success-message';
+                    resultDiv.textContent = data.message;
+                    showNotification(`Staked ${amount} CCI successfully!`, 'success');
+                    await loadStakingInfo(address);
+                } else {
+                    resultDiv.className = 'error-message';
+                    resultDiv.textContent = data.error;
+                }
+            } catch (error) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Staking failed: ' + error.message;
+            }
+        }
+
+        async function unstakeTokens() {
+            const address = document.getElementById('stakeAddress').value.trim() || connectedAccount;
+            const amount = parseFloat(document.getElementById('stakeAmount').value);
+            const resultDiv = document.getElementById('stakingResult');
+
+            try {
+                const response = await fetch(`${API_URL}/staking/unstake`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({address: address, amount: amount})
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'success-message';
+                    resultDiv.textContent = data.message;
+                    showNotification('Unstaked successfully!', 'success');
+                    await loadStakingInfo(address);
+                } else {
+                    resultDiv.className = 'error-message';
+                    resultDiv.textContent = data.error;
+                }
+            } catch (error) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Unstaking failed: ' + error.message;
+            }
+        }
+
+        async function claimRewards() {
+            const address = document.getElementById('stakeAddress').value.trim() || connectedAccount;
+            const resultDiv = document.getElementById('stakingResult');
+
+            try {
+                const response = await fetch(`${API_URL}/staking/claim`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({address: address})
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'success-message';
+                    resultDiv.textContent = data.message;
+                    showNotification('Rewards claimed!', 'success');
+                    await loadStakingInfo(address);
+                } else {
+                    resultDiv.className = 'error-message';
+                    resultDiv.textContent = data.error;
+                }
+            } catch (error) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Claim failed: ' + error.message;
+            }
+        }
+
+        async function loadStakingInfo(address) {
+            try {
+                const response = await fetch(`${API_URL}/staking/info/${address}`);
+                const data = await response.json();
+
+                const infoDiv = document.getElementById('stakingInfo');
+                infoDiv.className = 'info-message';
+                infoDiv.innerHTML = `
+                    <strong>Your Staking Info:</strong><br>
+                    Staked: ${data.staked} CCI<br>
+                    Pending Rewards: ${data.pending_rewards.toFixed(2)} CCI<br>
+                    Total Rewards: ${data.total_rewards.toFixed(2)} CCI<br>
+                    APY: ${data.apy}%
+                `;
+            } catch (error) {
+                console.error('Failed to load staking info:', error);
+            }
+        }
+
+        async function mintTokens() {
+            const address = document.getElementById('mintAddress').value.trim() || connectedAccount;
+            const amount = parseFloat(document.getElementById('mintAmount').value);
+            const resultDiv = document.getElementById('mintResult');
+
+            if (!address || !amount) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Please enter address and amount';
+                return;
+            }
+
+            resultDiv.textContent = 'Minting...';
+            resultDiv.className = 'info-message';
+
+            try {
+                const response = await fetch(`${API_URL}/cci/mint`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({to_address: address, amount: amount})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'success-message';
+                    resultDiv.textContent = data.message;
+                    showNotification(`Minted ${amount} CCI successfully!`, 'success');
+                    await loadCCIInfo();
+                    if (connectedAccount) await loadSMCBalance(connectedAccount);
+                } else {
+                    resultDiv.className = 'error-message';
+                    resultDiv.textContent = data.error;
+                }
+            } catch (error) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Minting failed: ' + error.message;
+            }
+        }
+
+        async function burnTokens() {
+            const address = document.getElementById('burnAddress').value.trim() || connectedAccount;
+            const amount = parseFloat(document.getElementById('burnAmount').value);
+            const resultDiv = document.getElementById('burnResult');
+
+            if (!address || !amount) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Please enter address and amount';
+                return;
+            }
+
+            resultDiv.textContent = 'Burning...';
+            resultDiv.className = 'info-message';
+
+            try {
+                const response = await fetch(`${API_URL}/cci/burn`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({from_address: address, amount: amount})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'success-message';
+                    resultDiv.textContent = data.message;
+                    showNotification(`Burned ${amount} CCI successfully!`, 'success');
+                    await loadCCIInfo();
+                    if (connectedAccount) await loadSMCBalance(connectedAccount);
+                } else {
+                    resultDiv.className = 'error-message';
+                    resultDiv.textContent = data.error;
+                }
+            } catch (error) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Burning failed: ' + error.message;
+            }
+        }
+
+        async function transferTokens() {
+            const from = document.getElementById('transferFrom').value.trim() || connectedAccount;
+            const to = document.getElementById('transferTo').value.trim();
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const resultDiv = document.getElementById('transferResult');
+
+            if (!from || !to || !amount) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Please fill all fields';
+                return;
+            }
+
+            resultDiv.textContent = 'Transferring...';
+            resultDiv.className = 'info-message';
+
+            try {
+                const response = await fetch(`${API_URL}/cci/transfer`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({from_address: from, to_address: to, amount: amount})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'success-message';
+                    resultDiv.textContent = data.message;
+                    showNotification(`Transferred ${amount} CCI successfully!`, 'success');
+                    await loadCCIInfo();
+                    if (connectedAccount) await loadSMCBalance(connectedAccount);
+                } else {
+                    resultDiv.className = 'error-message';
+                    resultDiv.textContent = data.error;
+                }
+            } catch (error) {
+                resultDiv.className = 'error-message';
+                resultDiv.textContent = 'Transfer failed: ' + error.message;
+            }
+        }
+
+        async function loadTransactionHistory() {
+            const address = document.getElementById('historyAddress').value.trim();
+            const historyDiv = document.getElementById('transactionHistory');
+
+            try {
+                let url = `${API_URL}/cci/history?limit=50`;
+                if (address) {
+                    url += `&address=${address}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.count === 0) {
+                    historyDiv.innerHTML = '<p class="empty-state">No transactions found</p>';
+                    return;
+                }
+
+                historyDiv.innerHTML = data.transactions.map(tx => {
+                    const date = new Date(tx.timestamp * 1000).toLocaleString();
+                    return `
+                        <div class="transaction-item">
+                            <span class="tx-type ${tx.type}">${tx.type}</span>
+                            <div style="margin-top: 8px;">
+                                <strong>From:</strong> ${tx.from.substring(0, 10)}...${tx.from.substring(tx.from.length - 8)}<br>
+                                <strong>To:</strong> ${tx.to.substring(0, 10)}...${tx.to.substring(tx.to.length - 8)}<br>
+                                <strong>Amount:</strong> ${tx.amount} CCI<br>
+                                <strong>Time:</strong> ${date}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Failed to load history:', error);
+                historyDiv.innerHTML = '<p class="error-message">Failed to load transaction history</p>';
+            }
+        }
+
+        async function loadLiveActivity() {
+            try {
+                const response = await fetch(`${API_URL}/cci/activity?limit=10`);
+                const data = await response.json();
+
+                const activityDiv = document.getElementById('liveActivity');
+
+                if (data.activity.length === 0) {
+                    activityDiv.innerHTML = '<p class="empty-state">No recent activity</p>';
+                    return;
+                }
+
+                activityDiv.innerHTML = data.activity.map(tx => {
+                    const time = new Date(tx.timestamp * 1000).toLocaleTimeString();
+                    let icon = '💰';
+                    if (tx.type === 'burn') icon = '🔥';
+                    if (tx.type === 'transfer') icon = '📤';
+
+                    return `
+                        <div class="activity-item ${tx.type}">
+                            ${icon} <strong>${tx.type.toUpperCase()}</strong>: ${tx.amount} SMC
+                            <div style="font-size: 0.85rem; color: #666; margin-top: 4px;">${time}</div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Failed to load activity:', error);
+            }
+        }
+
+        async function exportToCSV() {
+            try {
+                const address = document.getElementById('historyAddress').value.trim();
+                let url = `${API_URL}/cci/history?limit=1000`;
+                if (address) url += `&address=${address}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.count === 0) {
+                    showNotification('No transactions to export', 'error');
+                    return;
+                }
+
+                let csv = 'Type,From,To,Amount,Timestamp\n';
+                data.transactions.forEach(tx => {
+                    const date = new Date(tx.timestamp * 1000).toLocaleString();
+                    csv += `${tx.type},${tx.from},${tx.to},${tx.amount},${date}\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url2 = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url2;
+                a.download = `cci_transactions_${Date.now()}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url2);
+
+                showNotification(`Exported ${data.count} transactions!`, 'success');
+            } catch (error) {
+                showNotification('Export failed: ' + error.message, 'error');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => notification.classList.remove('show'), 4000);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            document.getElementById('themeToggle').checked = isDark;
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('themeToggle').checked = true;
+            }
+            loadCCIInfo();
+            loadLiveActivity();
+            loadTransactionHistory();
+            setInterval(loadCCIInfo, 10000);
+            setInterval(loadLiveActivity, 5000);
+        });
+
+        if (typeof window.ethereum !== 'undefined') {
+            const savedAccount = localStorage.getItem('metamask_connected_account');
+            if (savedAccount) {
+                connectedAccount = savedAccount;
+                document.getElementById('connectedAddress').textContent = connectedAccount;
+                document.getElementById('accountInfo').style.display = 'block';
+                document.getElementById('connectBtn').textContent = 'Connected';
+                document.getElementById('connectBtn').disabled = true;
+                loadSMCBalance(connectedAccount);
+            }
+
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length > 0) {
+                    connectedAccount = accounts[0];
+                    localStorage.setItem('metamask_connected_account', connectedAccount);
+                    document.getElementById('connectedAddress').textContent = connectedAccount;
+                    loadSMCBalance(connectedAccount);
+                } else {
+                    localStorage.removeItem('metamask_connected_account');
+                    connectedAccount = null;
+                    document.getElementById('accountInfo').style.display = 'none';
+                    document.getElementById('connectBtn').textContent = 'Connect MetaMask';
+                    document.getElementById('connectBtn').disabled = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

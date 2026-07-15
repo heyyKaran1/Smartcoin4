@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCI Coin Enterprise Platform - Blockchain Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="web3-integration.js"></script>
+    <script src="websocket-client.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            transition: all 0.3s ease;
+        }
+        body.dark-theme {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        body.dark-theme header,
+        body.dark-theme .card {
+            background: rgba(30, 30, 46, 0.95);
+            color: #e0e0e0;
+        }
+        body.dark-theme .header-content h1,
+        body.dark-theme .card h2 {
+            color: #667eea;
+        }
+        body.dark-theme .subtitle {
+            color: #aaa;
+        }
+        body.dark-theme .stat-item,
+        body.dark-theme .wallet-item,
+        body.dark-theme .block-item {
+            background: linear-gradient(135deg, #2a2a3e 0%, #1e1e2f 100%);
+            color: #e0e0e0;
+        }
+        body.dark-theme .stat-item strong {
+            color: #aaa !important;
+        }
+        body.dark-theme .stat-item span {
+            color: #e0e0e0 !important;
+        }
+        body.dark-theme input,
+        body.dark-theme select {
+            color: #e0e0e0;
+        }
+        body.dark-theme .input-field {
+            background: #2a2a3e;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        body.dark-theme .wallet-address {
+            color: #aaa;
+            font-family: monospace;
+        }
+        body.dark-theme .wallet-balance {
+            color: #4ade80;
+        }
+        body.dark-theme label,
+        body.dark-theme p,
+        body.dark-theme h3 {
+            color: #e0e0e0;
+        }
+        body.dark-theme .success-message {
+            background: linear-gradient(135deg, #28a74530 0%, #28a74520 100%);
+            color: #4ade80;
+        }
+        body.dark-theme .error-message {
+            background: linear-gradient(135deg, #dc354530 0%, #dc354520 100%);
+            color: #f87171;
+        }
+        body.dark-theme .info-message {
+            background: linear-gradient(135deg, #667eea30 0%, #667eea20 100%);
+            color: #8b9aee;
+        }
+        body.dark-theme .empty-state {
+            color: #888;
+        }
+        body.dark-theme .block-item strong,
+        body.dark-theme .wallet-item strong {
+            color: #667eea;
+        }
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: 0.4s;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .theme-slider:before {
+            position: absolute;
+            content: "🌙";
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        input:checked + .theme-slider {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+        }
+        input:checked + .theme-slider:before {
+            transform: translateX(30px);
+            content: "☀️";
+        }
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border-radius: 25px;
+            margin-bottom: 30px;
+            padding: 30px;
+        }
+        .header-content {
+            color: #333;
+        }
+        .header-content h1 {
+            animation: float 3s ease-in-out infinite;
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .header-stats {
+            margin-top: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .wallet-item {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .wallet-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-item {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+        .stat-item strong {
+            display: block;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        .stat-item span {
+            display: block;
+            color: #333;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .blocks-list, .mempool-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .block-item, .transaction-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .block-item:hover, .transaction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .success-message {
+            background: linear-gradient(135deg, #28a74520 0%, #28a74510 100%);
+            color: #28a745;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+            margin: 10px 0;
+        }
+        .error-message {
+            background: linear-gradient(135deg, #dc354520 0%, #dc354510 100%);
+            color: #dc3545;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #dc3545;
+            margin: 10px 0;
+        }
+        .card h2 {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1>🪙 CCI Coin Enterprise Platform</h1>
+                        <p class="subtitle">Professional Blockchain System with ECDSA Signatures & UTXO Model</p>
+                    </div>
+                    <label class="theme-switch" title="Toggle Dark/Light Mode">
+                        <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div>
+                <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px;">
+                    <a href="/" style="background: #fff; padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #667eea; border-radius: 8px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">⛓️ Blockchain</a>
+                    <a href="/cci.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🪙 CCI Token</a>
+                    <a href="/merchant.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">💼 Merchant</a>
+                    <a href="/scanner.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">📱 Scanner</a>
+                    <a href="/governance.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🏛️ Governance</a>
+                    <a href="/security.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🔒 Security</a>
+                    <a href="/future.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🚀 Future</a>
+                    <a href="/risk-analyzer.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🛡️ Risk Analyzer</a>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-label">CCI Supply</span>
+                    <span class="stat-value" id="totalSupply">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Blockchain Height</span>
+                    <span class="stat-value" id="totalBlocks">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Mining Difficulty</span>
+                    <span class="stat-value" id="difficulty">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Network Status</span>
+                    <span class="stat-value" id="chainValid">✅</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <section class="card">
+                    <h2>ℹ️ Token Information</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <strong>Token Name</strong>
+                            <span>CCI Coin</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Token Symbol</strong>
+                            <span>CCI</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Network</strong>
+                            <span>Ethereum</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Standard</strong>
+                            <span>ERC-20</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Total Supply</strong>
+                            <span>1,000,000,000</span>
+                        </div>
+                        <div class="stat-item">
+                            <strong>Decimals</strong>
+                            <span>18</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>👛 CCI Wallet</h2>
+                    <button class="btn btn-primary" onclick="createWallet()">Create New Wallet</button>
+
+                    <div id="walletList" class="wallet-list"></div>
+
+                    <div class="balance-checker">
+                        <h3>Check Balance</h3>
+                        <input type="text" id="addressInput" placeholder="Enter wallet address" class="input-field">
+                        <button class="btn btn-secondary" onclick="checkBalance()">Check Balance</button>
+                        <div id="balanceResult"></div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2>💳 Merchant Payment</h2>
+                    <form id="transactionForm" onsubmit="sendTransaction(event)">
+                        <label>From Wallet:</label>
+                        <select id="fromWallet" class="input-field" required>
+                            <option value="">Select wallet...</option>
+                        </select>
+
+                        <label>Merchant Name:</label>
+                        <input type="text" id="merchantName" class="input-field" placeholder="Enter merchant name" required>
+
+                        <label>Merchant ID:</label>
+                        <input type="text" id="merchantId" class="input-field" placeholder="Enter merchant ID">
+
+                        <label>Recipient Wallet:</label>
+                        <input type="text" id="toAddress" class="input-field" placeholder="Merchant wallet address" required>
+
+                        <label>Amount (CCI):</label>
+                        <input type="number" id="amount" class="input-field" placeholder="0.00" step="0.01" min="0.01" required>
+
+                        <label>Purpose:</label>
+                        <input type="text" id="purpose" class="input-field" placeholder="Payment purpose (e.g., Product purchase)">
+
+                        <label>Reference ID:</label>
+                        <input type="text" id="referenceId" class="input-field" placeholder="Transaction reference">
+
+                        <label>Transaction Fee:</label>
+                        <input type="number" id="fee" class="input-field" placeholder="0.1" step="0.01" value="0.1" required>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">Pay with Wallet</button>
+                            <button type="button" class="btn" style="flex: 1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="payWithMetaMask(event)">Pay with MetaMask</button>
+                        </div>
+                    </form>
+                    <div id="txResult"></div>
+                </section>
+
+                <section class="card">
+                    <h2>⛏️ Mining</h2>
+                    <p>Mine a new block and receive rewards!</p>
+                    <select id="minerWallet" class="input-field">
+                        <option value="">Select miner wallet...</option>
+                    </select>
+                    <button class="btn btn-success" onclick="mineBlock()">Mine Block</button>
+                    <div id="miningResult"></div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <section class="card">
+                    <h2>📊 Blockchain Statistics <span class="live-indicator"></span></h2>
+                    <div id="blockchainStats" class="stats-grid"></div>
+                </section>
+
+                <section class="card">
+                    <h2>📈 Blockchain Activity <span class="live-indicator"></span></h2>
+                    <canvas id="blockchainChart" style="max-height: 250px;"></canvas>
+                </section>
+
+                <section class="card">
+                    <h2>⛏️ Mining Difficulty <span class="live-indicator"></span></h2>
+                    <canvas id="miningChart" style="max-height: 250px;"></canvas>
+                </section>
+
+                <section class="card">
+                    <h2>⛓️ Recent Blocks <span class="live-indicator"></span></h2>
+                    <div id="blocksList" class="blocks-list"></div>
+                </section>
+
+                <section class="card">
+                    <h2>📝 Mempool</h2>
+                    <div id="mempool" class="mempool-list">
+                        <p class="empty-state">No pending transactions</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

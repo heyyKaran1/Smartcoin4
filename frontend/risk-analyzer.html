@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCI Coin - AI Risk Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .ra-hero {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .ra-hero h1 { color: #667eea; font-size: 2.5rem; }
+        .ra-hero p { color: #666; font-size: 1.1rem; margin-top: 8px; }
+
+        .ra-search-card { max-width: 780px; margin: 0 auto; }
+        .ra-icon-badge {
+            width: 64px; height: 64px; border-radius: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; font-size: 28px;
+        }
+        .ra-search-row { display: flex; gap: 10px; }
+        .ra-search-row input { margin-bottom: 0; }
+        .ra-search-row button {
+            width: auto; white-space: nowrap; margin-bottom: 0;
+            display: flex; align-items: center; gap: 8px; padding: 12px 22px;
+        }
+        .ra-examples {
+            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+            margin-top: 16px; font-size: 0.85rem; color: #888;
+        }
+        .ra-examples button {
+            background: #f1f1fb; border: 1px solid #e0e0f5; color: #667eea;
+            border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem;
+            width: auto; margin: 0;
+        }
+        .ra-examples button:hover { background: #e6e6fb; }
+
+        .ra-loading { text-align: center; padding: 60px 0; color: #666; }
+        .ra-spinner {
+            width: 46px; height: 46px; margin: 0 auto 18px;
+            border: 4px solid #e0e0f5; border-top-color: #667eea;
+            border-radius: 50%; animation: ra-spin 0.9s linear infinite;
+        }
+        @keyframes ra-spin { to { transform: rotate(360deg); } }
+
+        .ra-empty { text-align: center; padding: 70px 0; color: #999; }
+        .ra-empty .ra-empty-icon {
+            width: 90px; height: 90px; border-radius: 50%; background: #f1f1fb;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px; font-size: 40px;
+        }
+
+        .ra-summary-card { position: relative; overflow: hidden; }
+        .ra-summary-top {
+            display: flex; flex-wrap: wrap; align-items: center;
+            justify-content: space-between; gap: 24px;
+        }
+        .ra-summary-left { flex: 1; min-width: 220px; }
+        .ra-summary-left h2 { color: #333; margin-bottom: 4px; }
+        .ra-address-mono { font-family: monospace; color: #666; font-size: 0.9rem; margin-bottom: 12px; }
+
+        .ra-badge {
+            display: inline-block; padding: 6px 16px; border-radius: 999px;
+            font-weight: 700; font-size: 0.85rem; letter-spacing: 0.02em;
+        }
+        .ra-badge.low { background: #d4edda; color: #155724; }
+        .ra-badge.medium { background: #fff3cd; color: #7a5c00; }
+        .ra-badge.high { background: #ffe0cc; color: #a34400; }
+        .ra-badge.critical { background: #f8d7da; color: #721c24; }
+
+        .ra-gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+        .ra-gauge { position: relative; width: 160px; height: 160px; }
+        .ra-gauge svg { transform: rotate(-90deg); }
+        .ra-gauge-value {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .ra-gauge-value strong { font-size: 1.8rem; color: #333; }
+        .ra-gauge-caption { color: #666; font-size: 0.85rem; margin-top: 8px; }
+
+        .ra-right { text-align: right; }
+        .ra-confidence { color: #666; font-size: 0.9rem; margin-bottom: 10px; }
+        .ra-confidence span { color: #11998e; font-weight: 700; }
+        .ra-etherscan {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #f1f1fb; padding: 8px 16px; border-radius: 8px;
+            color: #667eea; text-decoration: none; font-size: 0.9rem; font-weight: 600;
+        }
+        .ra-etherscan:hover { background: #e6e6fb; }
+
+        .ra-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px; margin: 20px 0;
+        }
+        .ra-metric-card {
+            background: white; border-radius: 15px; padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .ra-metric-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+        .ra-metric-info { display: flex; align-items: center; gap: 10px; }
+        .ra-metric-icon {
+            width: 38px; height: 38px; border-radius: 10px; background: #f1f1fb;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .ra-metric-label { font-weight: 600; color: #333; font-size: 0.95rem; }
+        .ra-metric-desc { color: #888; font-size: 0.78rem; margin-top: 2px; }
+        .ra-metric-value { font-size: 1.5rem; font-weight: 700; }
+        .ra-metric-bar { height: 8px; border-radius: 999px; background: #eee; overflow: hidden; }
+        .ra-metric-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+
+        .color-low { color: #11998e; }
+        .color-medium { color: #667eea; }
+        .color-high { color: #d68a00; }
+        .color-critical { color: #d9534f; }
+        .fill-low { background: linear-gradient(90deg, #11998e, #38ef7d); }
+        .fill-medium { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .fill-high { background: linear-gradient(90deg, #f2994a, #f2c94c); }
+        .fill-critical { background: linear-gradient(90deg, #eb3941, #f15e64); }
+
+        .ra-summary-text { color: #444; line-height: 1.7; }
+        .ra-summary-text .warn { color: #d9534f; }
+        .ra-summary-text .caution { color: #d68a00; }
+        .ra-summary-text .ok { color: #11998e; }
+        .ra-summary-text .info { color: #667eea; }
+
+        .ra-recommend {
+            margin-top: 18px; padding: 16px; border-radius: 12px;
+            background: #f8f9fa; border: 1px solid #eee;
+        }
+        .ra-recommend h4 { color: #667eea; margin-bottom: 10px; font-size: 0.95rem; }
+        .ra-recommend ul { list-style: none; padding: 0; }
+        .ra-recommend li {
+            display: flex; gap: 8px; align-items: flex-start;
+            padding: 6px 0; color: #555; font-size: 0.9rem;
+        }
+
+        .ra-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+        .ra-actions button { width: auto; margin: 0; padding: 12px 24px; }
+
+        @media (max-width: 700px) {
+            .ra-search-row { flex-direction: column; }
+            .ra-search-row button { width: 100%; }
+            .ra-summary-top { flex-direction: column; align-items: stretch; text-align: center; }
+            .ra-right { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ra-hero">
+            <h1>🛡️ AI Risk Analyzer</h1>
+            <p>AI-powered wallet risk analysis for any blockchain address</p>
+        </div>
+
+        <div class="nav-buttons" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+            <a href="/" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">⛓️ Blockchain</a>
+            <a href="/cci.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🪙 CCI Token</a>
+            <a href="/merchant.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">💼 Merchant</a>
+            <a href="/scanner.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">📱 Scanner</a>
+            <a href="/governance.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🏛️ Governance</a>
+            <a href="/security.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🔒 Security</a>
+            <a href="/future.html" style="background: rgba(255,255,255,0.2); padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #fff; border-radius: 8px; display: inline-block; border: 2px solid white;">🚀 Future</a>
+            <a href="/risk-analyzer.html" style="background: #fff; padding: 12px 25px; margin: 0 10px; text-decoration: none; font-weight: bold; color: #667eea; border-radius: 8px; display: inline-block;">🛡️ Risk Analyzer</a>
+        </div>
+
+        <section class="card ra-search-card">
+            <div class="ra-icon-badge">🔍</div>
+            <h2 style="text-align:center; color:#333; margin-bottom:6px;">Analyze Any Wallet Address</h2>
+            <p style="text-align:center; color:#666; margin-bottom:22px;">
+                Enter a Bitcoin or Ethereum address to get a comprehensive AI-powered risk analysis
+            </p>
+
+            <div class="ra-search-row">
+                <input type="text" id="raAddressInput" class="input-field" placeholder="Enter wallet address (e.g., 0x742d35Cc6634C0532925a3b844Bc9e7595f1F2Cd)">
+                <button class="btn btn-primary" id="raAnalyzeBtn" onclick="raAnalyze()">⚡ Analyze</button>
+            </div>
+
+            <div class="ra-examples">
+                <span>Try:</span>
+                <button onclick="raSetExample('0x742d35Cc6634C0532925a3b844Bc9e7595f1F2Cd')">0x742d35...</button>
+                <button onclick="raSetExample('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA5394c')">0xd8dA6B...</button>
+                <button onclick="raSetExample('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')">bc1qxy2...</button>
+            </div>
+        </section>
+
+        <div id="raLoading" class="ra-loading" style="display:none;">
+            <div class="ra-spinner"></div>
+            <p>Running AI risk analysis…</p>
+        </div>
+
+        <div id="raEmpty" class="ra-empty">
+            <div class="ra-empty-icon">🔍</div>
+            <h3 style="color:#666; margin-bottom:6px;">Enter a wallet address to begin</h3>
+            <p>Our AI will analyze risk indicators, transaction patterns, and network connections</p>
+        </div>
+
+        <div id="raResults" style="display:none;">
+            <section class="card ra-summary-card">
+                <div class="ra-summary-top">
+                    <div class="ra-summary-left">
+                        <h2>Analysis Results</h2>
+                        <div class="ra-address-mono" id="raResultAddress"></div>
+                        <span class="ra-badge" id="raOverallBadge"></span>
+                    </div>
+
+                    <div class="ra-gauge-wrap">
+                        <div class="ra-gauge">
+                            <svg width="160" height="160" viewBox="0 0 160 160">
+                                <circle cx="80" cy="80" r="70" stroke="#eee" stroke-width="12" fill="none"/>
+                                <circle id="raGaugeCircle" cx="80" cy="80" r="70" stroke="#667eea" stroke-width="12" fill="none"
+                                        stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="440"/>
+                            </svg>
+                            <div class="ra-gauge-value">
+                                <strong id="raGaugeValue">0%</strong>
+                            </div>
+                        </div>
+                        <div class="ra-gauge-caption">Overall Risk Score</div>
+                    </div>
+
+                    <div class="ra-right">
+                        <div class="ra-confidence">AI Confidence: <span id="raConfidence">0%</span></div>
+                        <a id="raEtherscanLink" class="ra-etherscan" href="#" target="_blank" rel="noopener noreferrer">🔗 View on Etherscan</a>
+                    </div>
+                </div>
+            </section>
+
+            <div class="ra-grid" id="raMetricGrid"></div>
+
+            <section class="card">
+                <h2>⚡ AI Analysis Summary</h2>
+                <div class="ra-summary-text" id="raSummaryText"></div>
+                <div class="ra-recommend">
+                    <h4>Recommendations</h4>
+                    <ul id="raRecommendations"></ul>
+                </div>
+            </section>
+
+            <div class="ra-actions">
+                <button class="btn btn-secondary" onclick="raRefresh()">🔄 Refresh Analysis</button>
+                <button class="btn btn-primary" onclick="raGenerateReport()">Generate Full Report →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="risk-analyzer.js"></script>
+</body>
+</html>
